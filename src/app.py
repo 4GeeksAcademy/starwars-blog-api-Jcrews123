@@ -116,21 +116,20 @@ def handle_species():
 @app.route('/users', methods=['GET', 'POST'])
 def handle_users():
     if request.method == "POST":
-        email = request.json.get('email')
-        username = request.json.get('username')
-        if not email or not username:
-            return jsonify({
-                "msg": 'Email and username are required'
-            }), 400
+        email = request.json('email')
+        username = request.json('username')
         new_user = User(
             email = email, 
             username = username
         )
-        db.session.add(new_user)
-        db.session.commit()
         return jsonify(new_user.serialize()), 201
     users = User.query.all()
-    return jsonify([user.serialize() for user in users]), 200
+    users_dictionaries = []
+    for user in users:
+        users_dictionaries.append(
+            user.serialize()
+        )
+    return jsonify(users_dictionaries), 200
 
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_user_by_id(user_id):
@@ -143,16 +142,20 @@ def get_user_by_id(user_id):
 
 @app.route('/users/<int:user_id>/favorites', methods=['GET'])
 def get_user_favorites(user_id):
-    favorites = Favorites.query.filter_by(user_id=user_id).all()
+    favorites = Favorites.query.filter_by(user_id = user_id).all()
     return jsonify([favorite.serialize() for favorite in favorites]), 200
 
 @app.route('/favorites/planets/<int:planets_uid>', methods=['POST'])
 def add_favorite_planet(planets_uid):
     user_id = request.json.get('user_id')
-    favorite = Favorites(user_id=user_id, planets_uid=planets_uid)
-    db.session.add(favorite)
+    new_favorite = Favorites(
+        user_id = user_id,
+        planets_uid = planets_uid
+    )
+    db.session.add(new_favorite)
     db.session.commit()
-    return jsonify(favorite.serialize()), 201
+    return jsonify(new_favorite.serialize()), 201
+
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))

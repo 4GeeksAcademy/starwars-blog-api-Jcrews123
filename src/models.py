@@ -10,7 +10,7 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % self.username
 
-    def __init__(self, username, email, ):
+    def __init__(self, username, email):
         self.username = username
         self.email = email
         db.session.add(self)
@@ -25,7 +25,7 @@ class User(db.Model):
             "id": self.id,
             "email": self.email,
             "username": self.username,
-            "favorites": [favorite.serialize() for favorite in self.favorites]
+            "favorites": [favorites.serialize() for favorites in self.favorites]
             # do not serialize the password, its a security breach
         }
     
@@ -38,7 +38,6 @@ class People(db.Model):
     def __init__(self, name, description):
         self.name = name
         self.description = description
-
         db.session.add(self)
         try: 
             db.session.commit()
@@ -77,7 +76,6 @@ class Planets(db.Model):
             "name": self.name,
             "population": self.population,
             "description": self.description,
-            # "favorites": self.favorites,
         }    
     
 class Species(db.Model):
@@ -102,7 +100,6 @@ class Species(db.Model):
             "name": self.name,
             "language": self.language,
             "description": self.description,
-            # "favorites": self.favorites,
         }        
 class Favorites(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -129,7 +126,7 @@ class Favorites(db.Model):
 
     def serialize(self):
         item_id = self.people_id if self.people_id else self.planets_id
-        item_name = self.people_id.name if self.people else self.planets.name
+        item_name = self.people.name if self.people else self.planets.name
         item_type = "person" if self.people_id else "planet"
         return {
             'id': self.id,
